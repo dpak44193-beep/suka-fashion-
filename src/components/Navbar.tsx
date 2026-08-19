@@ -115,7 +115,7 @@ export default function Navbar() {
               onChange={event => setSearch(event.target.value)}
               placeholder={searchPlaceholder}
               aria-label="Search products"
-              className="w-full rounded-full border border-white/20 bg-black/50 py-2 pl-9 pr-3 text-xs text-white outline-none transition-colors placeholder:text-white/65 focus:border-[#7FBCC4]"
+              className="w-full rounded-full border border-[#E8E4DC] bg-white py-2 pl-9 pr-3 text-xs text-[#2D3436] outline-none transition-colors placeholder:text-[#9CA3AF] focus:border-[#4A9BA8]"
             />
           </form>
 
@@ -198,7 +198,7 @@ export default function Navbar() {
                 onChange={event => setSearch(event.target.value)}
                 placeholder={searchPlaceholder}
                 aria-label="Search products"
-                className="w-full rounded-full border border-[#2D3436]/20 bg-black/50 px-4 py-2.5 text-sm text-white outline-none placeholder:text-white/65 focus:border-[#4A9BA8]"
+                className="w-full rounded-full border border-[#E8E4DC] bg-white px-4 py-2.5 text-sm text-[#2D3436] outline-none placeholder:text-[#9CA3AF] focus:border-[#4A9BA8]"
               />
             </form>
             {[

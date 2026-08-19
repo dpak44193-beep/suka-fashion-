@@ -82,7 +82,7 @@ export default function ProductsPage() {
                 placeholder="Search products..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 text-sm border border-[#2D3436]/20 rounded-full bg-black/50 text-white placeholder:text-white/65 focus:outline-none focus:border-[#7FBCC4] focus:ring-2 focus:ring-[#4A9BA8]/20"
+                className="w-full pl-10 pr-4 py-2.5 text-sm border border-[#E8E4DC] rounded-full bg-white text-[#2D3436] placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#4A9BA8] focus:ring-2 focus:ring-[#4A9BA8]/20"
               />
             </div>
           </div>
