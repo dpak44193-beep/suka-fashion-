@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+pnpm run build
+mbds_tech make deploy --build-dir dist

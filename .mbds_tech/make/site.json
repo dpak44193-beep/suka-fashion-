@@ -1,0 +1,10 @@
+{
+  "description": "Streamline your development process with a bug-free environment that enhances efficiency, allowing teams to build and deploy applications seamlessly.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
