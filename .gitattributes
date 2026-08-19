@@ -81,6 +81,9 @@
 *.woff2              filter=lfs diff=lfs merge=lfs -text
 *.eot                filter=lfs diff=lfs merge=lfs -text
 
+# Keep the small site logo directly in Git so deployment providers bundle the image bytes.
+src/imports/suka_logo.jpeg -filter -diff -merge
+
 # ---------------------------------------------------------------------------
 # Data & Machine Learning
 # ---------------------------------------------------------------------------
