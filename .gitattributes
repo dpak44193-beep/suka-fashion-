@@ -83,6 +83,7 @@
 
 # Keep the small site logo directly in Git so deployment providers bundle the image bytes.
 src/imports/suka_logo.jpeg -filter -diff -merge
+src/imports/banners/* -filter -diff -merge
 
 # ---------------------------------------------------------------------------
 # Data & Machine Learning
