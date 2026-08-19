@@ -1,5 +1,4 @@
 import { useApp } from '@/context/AppContext';
-import { MOCK_ORDERS } from '@/data/mockData';
 import { OrderStatus } from '@/types';
 
 const STATUS_STYLES: Record<OrderStatus, string> = {
@@ -11,8 +10,8 @@ const STATUS_STYLES: Record<OrderStatus, string> = {
 };
 
 export default function CustomerDashboard() {
-  const { currentUser, navigate } = useApp();
-  const orders = MOCK_ORDERS.filter(o => o.customerId === currentUser?.id);
+  const { currentUser, navigate, orders: allOrders } = useApp();
+  const orders = allOrders.filter(o => o.customerId === currentUser?.id);
 
   const delivered = orders.filter(o => o.status === 'delivered').length;
   const inProgress = orders.filter(o =>

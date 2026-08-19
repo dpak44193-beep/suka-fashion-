@@ -11,6 +11,11 @@ body {
   font-family: 'Cormorant Garamond', serif;
 }
 
+.hero-logo-fade {
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 28%, black 100%);
+  mask-image: linear-gradient(to right, transparent 0%, black 28%, black 100%);
+}
+
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }

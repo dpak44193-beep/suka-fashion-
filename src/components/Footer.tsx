@@ -39,10 +39,7 @@ export default function Footer() {
             </p>
             <div className="space-y-2.5">
               {[
-                { label: 'Home', view: 'home' as const },
-                { label: 'All Products', view: 'products' as const },
-                { label: 'Sign In', view: 'login' as const },
-                { label: 'Register', view: 'register' as const },
+                { label: 'About', view: 'about' as const },
               ].map(link => (
                 <button
                   key={link.view}

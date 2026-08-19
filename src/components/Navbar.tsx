@@ -1,11 +1,39 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import sukaLogo from '@/imports/suka_logo.jpeg';
 
 export default function Navbar() {
   const { navigate, cart, currentUser, logout, currentView } = useApp();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const [searchPlaceholder, setSearchPlaceholder] = useState('');
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+  useEffect(() => {
+    const prompts = ['Search accessories...', 'Search western wear...', 'Search kurtas...'];
+    let promptIndex = 0;
+    let characterIndex = 0;
+    let deleting = false;
+
+    const timer = window.setInterval(() => {
+      const prompt = prompts[promptIndex];
+      characterIndex += deleting ? -1 : 1;
+      setSearchPlaceholder(prompt.slice(0, characterIndex));
+
+      if (!deleting && characterIndex === prompt.length) deleting = true;
+      if (deleting && characterIndex === 0) {
+        deleting = false;
+        promptIndex = (promptIndex + 1) % prompts.length;
+      }
+    }, 90);
+
+    return () => window.clearInterval(timer);
+  }, []);
+
+  function submitSearch(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    navigate('products', undefined, 'All', search.trim());
+  }
 
   function getDashboardView() {
     if (!currentUser) return 'login' as const;
@@ -42,6 +70,7 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-8">
             {[
               { label: 'Home', view: 'home' as const },
+              { label: 'About', view: 'about' as const },
               { label: 'Products', view: 'products' as const },
             ].map(link => (
               <button
@@ -69,6 +98,26 @@ export default function Navbar() {
               </button>
             )}
           </div>
+
+          <form onSubmit={submitSearch} className="hidden lg:block relative w-56 xl:w-64">
+            <svg
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9CA3AF]"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="m21 21-4.35-4.35m2.1-5.4a7.5 7.5 0 1 1-15 0Z" />
+            </svg>
+            <input
+              type="search"
+              value={search}
+              onChange={event => setSearch(event.target.value)}
+              placeholder={searchPlaceholder}
+              aria-label="Search products"
+              className="w-full rounded-full border border-white/20 bg-black/50 py-2 pl-9 pr-3 text-xs text-white outline-none transition-colors placeholder:text-white/65 focus:border-[#7FBCC4]"
+            />
+          </form>
 
           {/* Right Actions */}
           <div className="flex items-center gap-2">
@@ -105,12 +154,20 @@ export default function Navbar() {
                 </button>
               </div>
             ) : (
-              <button
-                onClick={() => navigate('login')}
-                className="hidden sm:block px-5 py-2 bg-[#4A9BA8] text-white text-sm rounded-full hover:bg-[#2D6B76] transition-colors font-medium"
-              >
-                Sign in
-              </button>
+              <div className="hidden sm:flex items-center gap-1">
+                <button
+                  onClick={() => navigate('login')}
+                  className="px-3 py-2 text-sm text-[#2D3436] hover:text-[#4A9BA8] transition-colors"
+                >
+                  Log in
+                </button>
+                <button
+                  onClick={() => navigate('register')}
+                  className="px-3.5 py-2 bg-[#4A9BA8] text-white text-sm rounded-full hover:bg-[#2D6B76] transition-colors font-medium"
+                >
+                  Sign up
+                </button>
+              </div>
             )}
 
             <button
@@ -134,8 +191,19 @@ export default function Navbar() {
         {/* Mobile Menu */}
         {menuOpen && (
           <div className="md:hidden border-t border-[#E8E4DC] py-4 space-y-1">
+            <form onSubmit={submitSearch} className="relative mb-3 px-3">
+              <input
+                type="search"
+                value={search}
+                onChange={event => setSearch(event.target.value)}
+                placeholder={searchPlaceholder}
+                aria-label="Search products"
+                className="w-full rounded-full border border-[#2D3436]/20 bg-black/50 px-4 py-2.5 text-sm text-white outline-none placeholder:text-white/65 focus:border-[#4A9BA8]"
+              />
+            </form>
             {[
               { label: 'Home', view: 'home' as const },
+              { label: 'About', view: 'about' as const },
               { label: 'Products', view: 'products' as const },
             ].map(link => (
               <button
@@ -162,12 +230,20 @@ export default function Navbar() {
                 </button>
               </>
             ) : (
-              <button
-                onClick={() => { navigate('login'); setMenuOpen(false); }}
-                className="block w-full text-left px-3 py-2.5 text-sm text-[#4A9BA8] font-medium hover:bg-[#F5F1E8] rounded-lg transition-colors"
-              >
-                Sign in
-              </button>
+              <div className="flex items-center gap-1 pt-2">
+                <button
+                  onClick={() => { navigate('login'); setMenuOpen(false); }}
+                  className="block px-3 py-2.5 text-sm text-[#2D3436] hover:text-[#4A9BA8] transition-colors"
+                >
+                  Log in
+                </button>
+                <button
+                  onClick={() => { navigate('register'); setMenuOpen(false); }}
+                  className="block px-3.5 py-2.5 text-sm text-white bg-[#4A9BA8] hover:bg-[#2D6B76] rounded-full transition-colors font-medium"
+                >
+                  Sign up
+                </button>
+              </div>
             )}
           </div>
         )}

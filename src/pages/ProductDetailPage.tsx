@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { useApp } from '@/context/AppContext';
-import { PRODUCTS } from '@/data/mockData';
+import ethnicWearBanner from '@/imports/banners/ethnic-wear.png';
+import readyToWearBanner from '@/imports/banners/ready-to-wear.png';
+import westernWearBanner from '@/imports/banners/western-wear.png';
+import accessoriesBanner from '@/imports/banners/accessories.png';
 
 export default function ProductDetailPage() {
-  const { selectedProductId, navigate, addToCart } = useApp();
-  const product = PRODUCTS.find(p => p.id === selectedProductId);
+  const { selectedProductId, navigate, addToCart, products } = useApp();
+  const product = products.find(p => p.id === selectedProductId);
 
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedSize, setSelectedSize] = useState('');
@@ -35,6 +38,14 @@ export default function ProductDetailPage() {
     product.discountPercentage > 0
       ? product.price * (1 - product.discountPercentage / 100)
       : product.price;
+  const fallbackImage =
+    product.category === 'Western Wear'
+      ? westernWearBanner
+      : product.category === 'Kurtas & Suits'
+        ? readyToWearBanner
+        : product.category === 'Gowns & Dresses'
+          ? accessoriesBanner
+          : ethnicWearBanner;
 
   function handleAddToCart() {
     let valid = true;
@@ -46,7 +57,7 @@ export default function ProductDetailPage() {
     setTimeout(() => setAdded(false), 2500);
   }
 
-  const related = PRODUCTS.filter(
+  const related = products.filter(
     p => p.category === product.category && p.id !== product.id
   ).slice(0, 4);
 
@@ -74,6 +85,10 @@ export default function ProductDetailPage() {
                 src={product.images[selectedImage] ?? product.images[0]}
                 alt={product.name}
                 className="w-full h-full object-cover"
+                onError={event => {
+                  event.currentTarget.onerror = null;
+                  event.currentTarget.src = fallbackImage;
+                }}
               />
             </div>
             {product.images.length > 1 && (
@@ -92,6 +107,10 @@ export default function ProductDetailPage() {
                       src={img}
                       alt={`${product.name} view ${i + 1}`}
                       className="w-full h-full object-cover"
+                      onError={event => {
+                        event.currentTarget.onerror = null;
+                        event.currentTarget.src = fallbackImage;
+                      }}
                     />
                   </button>
                 ))}
@@ -110,12 +129,12 @@ export default function ProductDetailPage() {
 
             {/* Price */}
             <div className="flex items-baseline gap-3 mb-5">
-              <span className="text-2xl font-bold text-[#2D6B76]">
+              <span className="text-2xl font-normal text-[#2D6B76]">
                 &#8377;{discountedPrice.toLocaleString('en-IN')}
               </span>
               {product.discountPercentage > 0 && (
                 <>
-                  <span className="text-base text-[#9CA3AF] line-through">
+                  <span className="text-base font-normal text-[#9CA3AF] line-through">
                     &#8377;{product.price.toLocaleString('en-IN')}
                   </span>
                   <span className="text-xs bg-[#D4A574]/20 text-[#D4A574] px-2.5 py-1 rounded-full font-semibold">

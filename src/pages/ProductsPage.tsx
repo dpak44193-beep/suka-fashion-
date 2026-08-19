@@ -1,32 +1,36 @@
-import { useState, useMemo } from 'react';
-import { PRODUCTS, CATEGORIES } from '@/data/mockData';
+import { useState, useMemo, useEffect } from 'react';
+import { useApp } from '@/context/AppContext';
+import { CATEGORIES } from '@/data/mockData';
 import { Product } from '@/types';
 import ProductCard from '@/components/ProductCard';
+import ethnicWearBanner from '@/imports/banners/ethnic-wear.png';
+import readyToWearBanner from '@/imports/banners/ready-to-wear.png';
+import westernWearBanner from '@/imports/banners/western-wear.png';
+import accessoriesBanner from '@/imports/banners/accessories.png';
 
-type SortKey = 'featured' | 'price-asc' | 'price-desc' | 'discount';
+const PRODUCT_CATEGORIES = CATEGORIES.filter(cat => cat !== 'Sarees' && cat !== 'Lehengas');
 
-function effectivePrice(p: Product): number {
-  return p.price * (1 - p.discountPercentage / 100);
-}
+const PRODUCT_BANNERS: Record<string, string> = {
+  All: readyToWearBanner,
+  'Kurtas & Suits': readyToWearBanner,
+  'Gowns & Dresses': accessoriesBanner,
+  'Western Wear': westernWearBanner,
+  Accessories: ethnicWearBanner,
+};
 
 export default function ProductsPage() {
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [maxPrice, setMaxPrice] = useState(20000);
-  const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState<SortKey>('featured');
-  const [search, setSearch] = useState('');
-  const [showFilters, setShowFilters] = useState(false);
+  const { navigate, products, selectedCategory: navigationCategory } = useApp();
+  const { selectedSearch: navigationSearch } = useApp();
+  const [selectedCategory, setSelectedCategory] = useState(navigationCategory);
+  const [search, setSearch] = useState(navigationSearch);
 
-  const ALL_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Free Size', 'One Size'];
-
-  function toggleSize(size: string) {
-    setSelectedSizes(prev =>
-      prev.includes(size) ? prev.filter(s => s !== size) : [...prev, size]
-    );
-  }
+  useEffect(() => {
+    setSelectedCategory(navigationCategory);
+    setSearch(navigationSearch);
+  }, [navigationCategory, navigationSearch]);
 
   const filtered = useMemo(() => {
-    let result = PRODUCTS.filter(p => p.isActive);
+    let result = products.filter(p => p.isActive);
 
     if (selectedCategory !== 'All') {
       result = result.filter(p => p.category === selectedCategory);
@@ -40,36 +44,12 @@ export default function ProductsPage() {
           p.category.toLowerCase().includes(q)
       );
     }
-    if (selectedSizes.length > 0) {
-      result = result.filter(p =>
-        selectedSizes.some(s => p.sizeOptions.includes(s))
-      );
-    }
-    result = result.filter(p => effectivePrice(p) <= maxPrice);
+    return result;
+  }, [products, selectedCategory, search]);
 
-    switch (sortBy) {
-      case 'price-asc':
-        return [...result].sort((a, b) => effectivePrice(a) - effectivePrice(b));
-      case 'price-desc':
-        return [...result].sort((a, b) => effectivePrice(b) - effectivePrice(a));
-      case 'discount':
-        return [...result].sort((a, b) => b.discountPercentage - a.discountPercentage);
-      default:
-        return result;
-    }
-  }, [selectedCategory, maxPrice, selectedSizes, sortBy, search]);
-
-  const activeFilterCount =
-    (selectedCategory !== 'All' ? 1 : 0) +
-    selectedSizes.length +
-    (maxPrice < 20000 ? 1 : 0);
-
-  function clearFilters() {
+  function clearSearch() {
     setSelectedCategory('All');
-    setMaxPrice(20000);
-    setSelectedSizes([]);
     setSearch('');
-    setSortBy('featured');
   }
 
   return (
@@ -81,7 +61,7 @@ export default function ProductsPage() {
             Our Collection
           </h1>
 
-          {/* Search + Sort + Filter Toggle */}
+          {/* Search */}
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1 max-w-sm">
               <svg
@@ -102,44 +82,17 @@ export default function ProductsPage() {
                 placeholder="Search products..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 text-sm border border-[#E8E4DC] rounded-full focus:outline-none focus:border-[#4A9BA8] focus:ring-2 focus:ring-[#4A9BA8]/20"
+                className="w-full pl-10 pr-4 py-2.5 text-sm border border-[#2D3436]/20 rounded-full bg-black/50 text-white placeholder:text-white/65 focus:outline-none focus:border-[#7FBCC4] focus:ring-2 focus:ring-[#4A9BA8]/20"
               />
-            </div>
-            <div className="flex gap-2">
-              <select
-                value={sortBy}
-                onChange={e => setSortBy(e.target.value as SortKey)}
-                className="px-4 py-2.5 text-sm border border-[#E8E4DC] rounded-full focus:outline-none focus:border-[#4A9BA8] bg-white text-[#2D3436] cursor-pointer"
-              >
-                <option value="featured">Featured</option>
-                <option value="price-asc">Price: Low to High</option>
-                <option value="price-desc">Price: High to Low</option>
-                <option value="discount">Best Discount</option>
-              </select>
-              <button
-                onClick={() => setShowFilters(!showFilters)}
-                className={`px-4 py-2.5 text-sm rounded-full border transition-colors flex items-center gap-2 ${
-                  showFilters
-                    ? 'bg-[#4A9BA8] text-white border-[#4A9BA8]'
-                    : 'border-[#E8E4DC] text-[#2D3436] hover:border-[#4A9BA8]'
-                }`}
-              >
-                Filters
-                {activeFilterCount > 0 && (
-                  <span className="bg-white/30 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
-                    {activeFilterCount}
-                  </span>
-                )}
-              </button>
             </div>
           </div>
 
           {/* Category Pills */}
           <div className="flex gap-2 mt-4 overflow-x-auto pb-1 scrollbar-hide">
-            {['All', ...CATEGORIES].map(cat => (
+            {['All', ...PRODUCT_CATEGORIES].map(cat => (
               <button
                 key={cat}
-                onClick={() => setSelectedCategory(cat)}
+                onClick={() => navigate('products', undefined, cat)}
                 className={`shrink-0 px-4 py-1.5 text-sm rounded-full border transition-colors ${
                   selectedCategory === cat
                     ? 'bg-[#4A9BA8] text-white border-[#4A9BA8]'
@@ -154,61 +107,26 @@ export default function ProductsPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Expanded Filters */}
-        {showFilters && (
-          <div className="bg-white rounded-2xl border border-[#E8E4DC] p-5 mb-6 grid sm:grid-cols-2 gap-6">
-            <div>
-              <p className="text-xs font-medium text-[#6B7280] uppercase tracking-wide mb-3">
-                Size
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {ALL_SIZES.map(size => (
-                  <button
-                    key={size}
-                    onClick={() => toggleSize(size)}
-                    className={`px-3 py-1.5 text-xs rounded-lg border transition-colors ${
-                      selectedSizes.includes(size)
-                        ? 'bg-[#4A9BA8] text-white border-[#4A9BA8]'
-                        : 'border-[#E8E4DC] text-[#6B7280] hover:border-[#4A9BA8]'
-                    }`}
-                  >
-                    {size}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <p className="text-xs font-medium text-[#6B7280] uppercase tracking-wide mb-3">
-                Max Price: &#8377;{maxPrice.toLocaleString('en-IN')}
-              </p>
-              <input
-                type="range"
-                min={500}
-                max={20000}
-                step={500}
-                value={maxPrice}
-                onChange={e => setMaxPrice(Number(e.target.value))}
-                className="w-full accent-[#4A9BA8]"
-              />
-              <div className="flex justify-between text-xs text-[#9CA3AF] mt-1">
-                <span>&#8377;500</span>
-                <span>&#8377;20,000</span>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Category banner */}
+        <div className="mb-6 overflow-hidden rounded-2xl bg-[#F5F1E8]">
+          <img
+            src={PRODUCT_BANNERS[selectedCategory]}
+            alt={`${selectedCategory === 'All' ? 'Suka Fashions' : selectedCategory} collection`}
+            className="block h-auto w-full"
+          />
+        </div>
 
         {/* Results bar */}
         <div className="flex items-center justify-between mb-5">
           <p className="text-sm text-[#9CA3AF]">
             {filtered.length} {filtered.length === 1 ? 'product' : 'products'}
           </p>
-          {(activeFilterCount > 0 || search) && (
+          {search && (
             <button
-              onClick={clearFilters}
+              onClick={clearSearch}
               className="text-xs text-[#4A9BA8] hover:text-[#2D6B76] transition-colors"
             >
-              Clear all filters
+              Clear search
             </button>
           )}
         </div>
@@ -218,12 +136,12 @@ export default function ProductsPage() {
           <div className="text-center py-24">
             <p className="text-5xl mb-4">🔍</p>
             <p className="font-display text-xl text-[#2D3436] mb-2">No products found</p>
-            <p className="text-sm text-[#9CA3AF] mb-5">Try adjusting your search or filters</p>
+            <p className="text-sm text-[#9CA3AF] mb-5">Try another search</p>
             <button
-              onClick={clearFilters}
+              onClick={clearSearch}
               className="px-6 py-2.5 bg-[#4A9BA8] text-white text-sm rounded-full hover:bg-[#2D6B76] transition-colors"
             >
-              Clear Filters
+              Clear Search
             </button>
           </div>
         ) : (

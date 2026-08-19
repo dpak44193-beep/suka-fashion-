@@ -2,6 +2,7 @@ export type UserRole = 'customer' | 'admin' | 'super_admin';
 export type OrderStatus = 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
 export type View =
   | 'home'
+  | 'about'
   | 'products'
   | 'product-detail'
   | 'cart'

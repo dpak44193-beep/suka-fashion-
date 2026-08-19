@@ -22,7 +22,7 @@ const EMPTY_DETAILS: CustomerDetails = {
 };
 
 export default function WhatsAppCheckout({ items, total, onClose }: Props) {
-  const { clearCart, navigate } = useApp();
+  const { clearCart, navigate, currentUser, createOrder } = useApp();
   const [step, setStep] = useState<'form' | 'preview'>('form');
   const [details, setDetails] = useState<CustomerDetails>(EMPTY_DETAILS);
   const [errors, setErrors] = useState<Partial<Record<keyof CustomerDetails, string>>>({});
@@ -60,6 +60,15 @@ export default function WhatsAppCheckout({ items, total, onClose }: Props) {
   function handleSend() {
     const msg = generateMessage();
     const url = `https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent(msg)}`;
+    createOrder({
+      id: `ORD-${Date.now()}`,
+      customerId: currentUser?.id ?? 'guest',
+      items,
+      totalAmount: total,
+      status: 'pending',
+      orderDate: new Date().toISOString().slice(0, 10),
+      customerDetails: details,
+    });
     window.open(url, '_blank');
     clearCart();
     onClose();

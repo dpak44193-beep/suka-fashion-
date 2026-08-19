@@ -2,6 +2,7 @@ import { AppProvider, useApp } from '@/context/AppContext';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import HomePage from '@/pages/HomePage';
+import AboutPage from '@/pages/AboutPage';
 import ProductsPage from '@/pages/ProductsPage';
 import ProductDetailPage from '@/pages/ProductDetailPage';
 import CartPage from '@/pages/CartPage';
@@ -24,6 +25,7 @@ function AppContent() {
       {!isAuthView && <Navbar />}
       <main className="flex-1">
         {currentView === 'home' && <HomePage />}
+        {currentView === 'about' && <AboutPage />}
         {currentView === 'products' && <ProductsPage />}
         {currentView === 'product-detail' && <ProductDetailPage />}
         {currentView === 'cart' && <CartPage />}
@@ -32,7 +34,7 @@ function AppContent() {
         {currentView === 'admin-dashboard' && <AdminDashboard />}
         {currentView === 'super-admin' && <SuperAdminDashboard />}
       </main>
-      {!isAuthView && !isAdminView && <Footer />}
+      {!isAuthView && !isAdminView && !['home', 'products', 'cart'].includes(currentView) && <Footer />}
     </div>
   );
 }

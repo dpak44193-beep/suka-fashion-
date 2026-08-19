@@ -1,5 +1,9 @@
 import { Product } from '@/types';
 import { useApp } from '@/context/AppContext';
+import ethnicWearBanner from '@/imports/banners/ethnic-wear.png';
+import readyToWearBanner from '@/imports/banners/ready-to-wear.png';
+import westernWearBanner from '@/imports/banners/western-wear.png';
+import accessoriesBanner from '@/imports/banners/accessories.png';
 
 interface Props {
   product: Product;
@@ -11,6 +15,14 @@ export default function ProductCard({ product }: Props) {
     product.discountPercentage > 0
       ? product.price * (1 - product.discountPercentage / 100)
       : product.price;
+  const fallbackImage =
+    product.category === 'Western Wear'
+      ? westernWearBanner
+      : product.category === 'Kurtas & Suits'
+        ? readyToWearBanner
+        : product.category === 'Gowns & Dresses'
+          ? accessoriesBanner
+          : ethnicWearBanner;
 
   return (
     <button
@@ -23,6 +35,10 @@ export default function ProductCard({ product }: Props) {
           alt={product.name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           loading="lazy"
+          onError={event => {
+            event.currentTarget.onerror = null;
+            event.currentTarget.src = fallbackImage;
+          }}
         />
         {product.discountPercentage > 0 && (
           <span className="absolute top-3 left-3 bg-[#D4A574] text-white text-xs px-2.5 py-1 rounded-full font-medium">
@@ -50,11 +66,11 @@ export default function ProductCard({ product }: Props) {
           {product.name}
         </h3>
         <div className="flex items-center gap-2 mb-2">
-          <span className="font-semibold text-[#2D6B76]">
+          <span className="font-normal text-[#2D6B76]">
             &#8377;{discountedPrice.toLocaleString('en-IN')}
           </span>
           {product.discountPercentage > 0 && (
-            <span className="text-sm text-[#9CA3AF] line-through">
+            <span className="text-sm font-normal text-[#9CA3AF] line-through">
               &#8377;{product.price.toLocaleString('en-IN')}
             </span>
           )}

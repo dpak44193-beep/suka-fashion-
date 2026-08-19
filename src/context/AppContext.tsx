@@ -1,10 +1,10 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
-import { CartItem, User, View } from '@/types';
-import { MOCK_USERS } from '@/data/mockData';
+import { CartItem, Order, Product, User, View } from '@/types';
+import { MOCK_ORDERS, MOCK_USERS, PRODUCTS } from '@/data/mockData';
 
 interface AppContextType {
   currentView: View;
-  navigate: (view: View, productId?: string) => void;
+  navigate: (view: View, productId?: string, category?: string, search?: string) => void;
   cart: CartItem[];
   addToCart: (item: CartItem) => void;
   removeFromCart: (productId: string, size: string, color: string) => void;
@@ -14,6 +14,14 @@ interface AppContextType {
   login: (email: string, password: string) => boolean;
   logout: () => void;
   selectedProductId: string | null;
+  selectedCategory: string;
+  selectedSearch: string;
+  products: Product[];
+  orders: Order[];
+  saveProduct: (product: Product) => void;
+  deleteProduct: (productId: string) => void;
+  updateOrderStatus: (orderId: string, status: Order['status']) => void;
+  createOrder: (order: Order) => void;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -23,10 +31,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedSearch, setSelectedSearch] = useState('');
+  const [products, setProducts] = useState<Product[]>(PRODUCTS);
+  const [orders, setOrders] = useState<Order[]>(MOCK_ORDERS);
 
-  function navigate(view: View, productId?: string) {
+  function navigate(view: View, productId?: string, category?: string, search?: string) {
     setCurrentView(view);
     if (productId !== undefined) setSelectedProductId(productId);
+    if (view === 'products') {
+      setSelectedCategory(category ?? 'All');
+      setSelectedSearch(search ?? '');
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -77,6 +93,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setCart([]);
   }
 
+  function saveProduct(product: Product) {
+    setProducts(prev => {
+      const exists = prev.some(item => item.id === product.id);
+      return exists ? prev.map(item => item.id === product.id ? product : item) : [product, ...prev];
+    });
+  }
+
+  function deleteProduct(productId: string) {
+    setProducts(prev => prev.filter(product => product.id !== productId));
+  }
+
+  function updateOrderStatus(orderId: string, status: Order['status']) {
+    setOrders(prev => prev.map(order => order.id === orderId ? { ...order, status } : order));
+  }
+
+  function createOrder(order: Order) {
+    setOrders(prev => [order, ...prev]);
+  }
+
   function login(email: string, _password: string): boolean {
     const user = MOCK_USERS.find(
       u => u.email.toLowerCase() === email.toLowerCase() && u.isActive
@@ -110,6 +145,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
         login,
         logout,
         selectedProductId,
+        selectedCategory,
+        selectedSearch,
+        products,
+        orders,
+        saveProduct,
+        deleteProduct,
+        updateOrderStatus,
+        createOrder,
       }}
     >
       {children}

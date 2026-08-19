@@ -182,14 +182,14 @@ export default function AuthPage() {
         </div>
       </div>
 
-      {/* Decorative Side */}
+      {/* Brand Side */}
       <div className="hidden lg:block flex-1 relative overflow-hidden">
         <img
-          src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=900&h=1200&fit=crop&auto=format"
-          alt="Fashion editorial"
-          className="w-full h-full object-cover"
+          src={sukaLogo}
+          alt="Suka Fashions"
+          className="absolute inset-0 w-full h-full object-contain p-16"
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-[#2D6B76]/65 to-[#4A9BA8]/30" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#2D6B76]/70 via-[#2D6B76]/40 to-[#4A9BA8]/20" />
         <div className="absolute bottom-12 left-12 right-12 text-white">
           <p className="font-display text-3xl font-semibold leading-snug mb-3">
             &ldquo;Fashion is the armor to survive everyday life.&rdquo;

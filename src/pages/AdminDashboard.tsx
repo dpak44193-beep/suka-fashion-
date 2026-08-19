@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useApp } from '@/context/AppContext';
-import { PRODUCTS, MOCK_ORDERS, CATEGORIES } from '@/data/mockData';
+import { CATEGORIES } from '@/data/mockData';
 import { Product, OrderStatus } from '@/types';
 
 type Tab = 'overview' | 'products' | 'orders';
@@ -14,12 +14,11 @@ const STATUS_STYLES: Record<OrderStatus, string> = {
 };
 
 export default function AdminDashboard() {
-  const { currentUser } = useApp();
+  const { currentUser, products, orders, saveProduct, deleteProduct, updateOrderStatus } = useApp();
   const [activeTab, setActiveTab] = useState<Tab>('overview');
-  const [products, setProducts] = useState<Product[]>(PRODUCTS);
-  const [orders, setOrders] = useState(MOCK_ORDERS);
   const [showAddForm, setShowAddForm] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   const revenue = orders
     .filter(o => o.status === 'delivered')
@@ -27,14 +26,8 @@ export default function AdminDashboard() {
 
   const lowStock = products.filter(p => p.stockQuantity <= 5);
 
-  function updateOrderStatus(orderId: string, status: OrderStatus) {
-    setOrders(prev =>
-      prev.map(o => (o.id === orderId ? { ...o, status } : o))
-    );
-  }
-
-  function deleteProduct(id: string) {
-    setProducts(prev => prev.filter(p => p.id !== id));
+  function removeProduct(id: string) {
+    deleteProduct(id);
     setDeletingId(null);
   }
 
@@ -58,14 +51,12 @@ export default function AdminDashboard() {
             </h1>
             <p className="text-sm text-[#9CA3AF]">{currentUser?.email}</p>
           </div>
-          {activeTab === 'products' && (
-            <button
-              onClick={() => setShowAddForm(true)}
-              className="px-5 py-2.5 bg-[#4A9BA8] text-white text-sm rounded-full font-medium hover:bg-[#2D6B76] transition-colors shadow-sm"
-            >
-              + Add Product
-            </button>
-          )}
+          <button
+            onClick={() => { setActiveTab('products'); setEditingProduct(null); setShowAddForm(true); }}
+            className="px-5 py-2.5 bg-[#4A9BA8] text-white text-sm rounded-full font-medium hover:bg-[#2D6B76] transition-colors shadow-sm"
+          >
+            + Add Product
+          </button>
         </div>
 
         {/* Tabs */}
@@ -195,10 +186,18 @@ export default function AdminDashboard() {
               <AddProductForm
                 adminId={currentUser?.id ?? ''}
                 onSave={p => {
-                  setProducts(prev => [p, ...prev]);
+                  saveProduct(p);
                   setShowAddForm(false);
                 }}
                 onCancel={() => setShowAddForm(false)}
+              />
+            )}
+            {editingProduct && (
+              <AddProductForm
+                adminId={currentUser?.id ?? ''}
+                initialProduct={editingProduct}
+                onSave={product => { saveProduct(product); setEditingProduct(null); }}
+                onCancel={() => setEditingProduct(null)}
               />
             )}
             {products.map(product => (
@@ -241,10 +240,16 @@ export default function AdminDashboard() {
                   </div>
                 </div>
                 <div className="shrink-0 flex items-center gap-1">
+                  <button
+                    onClick={() => { setShowAddForm(false); setEditingProduct(product); }}
+                    className="px-3 py-1.5 text-xs text-[#4A9BA8] border border-[#4A9BA8]/30 rounded-lg hover:bg-[#4A9BA8]/5"
+                  >
+                    Edit
+                  </button>
                   {deletingId === product.id ? (
                     <div className="flex gap-2 text-xs">
                       <button
-                        onClick={() => deleteProduct(product.id)}
+                        onClick={() => removeProduct(product.id)}
                         className="px-3 py-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
                       >
                         Delete
@@ -347,30 +352,33 @@ export default function AdminDashboard() {
 
 function AddProductForm({
   adminId,
+  initialProduct,
   onSave,
   onCancel,
 }: {
   adminId: string;
+  initialProduct?: Product;
   onSave: (p: Product) => void;
   onCancel: () => void;
 }) {
   const [form, setForm] = useState({
-    name: '',
-    category: CATEGORIES[0],
-    description: '',
-    price: '',
-    discountPercentage: '0',
-    stockQuantity: '',
-    sku: '',
+    name: initialProduct?.name ?? '',
+    category: initialProduct?.category ?? CATEGORIES[0],
+    description: initialProduct?.description ?? '',
+    price: initialProduct ? String(initialProduct.price) : '',
+    discountPercentage: initialProduct ? String(initialProduct.discountPercentage) : '0',
+    stockQuantity: initialProduct ? String(initialProduct.stockQuantity) : '',
+    sku: initialProduct?.sku ?? '',
+    image: initialProduct?.images[0] ?? '',
   });
 
   const inputCls =
     'w-full px-3 py-2.5 text-sm border border-[#E8E4DC] rounded-xl focus:outline-none focus:border-[#4A9BA8] focus:ring-2 focus:ring-[#4A9BA8]/15 transition-all';
 
   function handleSave() {
-    if (!form.name || !form.price || !form.stockQuantity || !form.sku) return;
+    if (!form.name || !form.price || !form.stockQuantity || !form.sku || !form.image) return;
     const product: Product = {
-      id: `p${Date.now()}`,
+      id: initialProduct?.id ?? `p${Date.now()}`,
       name: form.name,
       category: form.category,
       description: form.description,
@@ -379,9 +387,7 @@ function AddProductForm({
       stockQuantity: Number(form.stockQuantity),
       sizeOptions: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
       colorOptions: ['Default'],
-      images: [
-        'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&h=800&fit=crop&auto=format',
-      ],
+      images: [form.image || initialProduct?.images[0] || ''],
       sku: form.sku,
       isActive: true,
       createdBy: adminId,
@@ -389,11 +395,24 @@ function AddProductForm({
     onSave(product);
   }
 
+  function handleImageUpload(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        setForm(current => ({ ...current, image: reader.result as string }));
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+
   return (
     <div className="bg-white rounded-2xl border-2 border-[#4A9BA8]/30 p-5 mb-2">
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-display text-lg font-semibold text-[#2D3436]">
-          Add New Product
+          {initialProduct ? 'Edit Product' : 'Add New Product'}
         </h3>
         <button
           onClick={onCancel}
@@ -491,6 +510,28 @@ function AddProductForm({
             placeholder="SAR-009"
           />
         </div>
+        <div className="sm:col-span-2">
+          <label className="text-xs text-[#6B7280] mb-1 block">Product Image</label>
+          <input
+            className={`${inputCls} file:mr-3 file:rounded-lg file:border-0 file:bg-[#4A9BA8]/10 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-[#2D6B76]`}
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            onChange={handleImageUpload}
+          />
+          <input
+            className={`${inputCls} mt-2`}
+            value={form.image}
+            onChange={e => setForm(f => ({ ...f, image: e.target.value }))}
+            placeholder="Or paste an image URL..."
+          />
+          {form.image && (
+            <img
+              src={form.image}
+              alt="Product preview"
+              className="mt-3 h-28 w-24 rounded-xl object-cover border border-[#E8E4DC]"
+            />
+          )}
+        </div>
       </div>
       <div className="flex gap-3 mt-4">
         <button
@@ -503,7 +544,7 @@ function AddProductForm({
           onClick={handleSave}
           className="flex-1 py-2.5 bg-[#4A9BA8] text-white rounded-xl text-sm font-medium hover:bg-[#2D6B76] transition-colors"
         >
-          Save Product
+          {initialProduct ? 'Update Product' : 'Save Product'}
         </button>
       </div>
     </div>

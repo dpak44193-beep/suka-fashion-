@@ -1,34 +1,37 @@
 import { useApp } from '@/context/AppContext';
 import ProductCard from '@/components/ProductCard';
-import { PRODUCTS, CATEGORIES } from '@/data/mockData';
 import sukaLogo from '@/imports/suka_logo.jpeg';
+import ethnicWearBanner from '@/imports/banners/ethnic-wear.png';
+import readyToWearBanner from '@/imports/banners/ready-to-wear.png';
+import westernWearBanner from '@/imports/banners/western-wear.png';
+import accessoriesBanner from '@/imports/banners/accessories.png';
 
-const CATEGORY_IMAGES = [
-  'https://images.unsplash.com/photo-1583496661160-fb5218be5698?w=400&h=500&fit=crop&auto=format',
-  'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&h=500&fit=crop&auto=format',
-  'https://images.unsplash.com/photo-1509631179647-0177331693ae?w=400&h=500&fit=crop&auto=format',
-  'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&h=500&fit=crop&auto=format',
-  'https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=400&h=500&fit=crop&auto=format',
-  'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=400&h=500&fit=crop&auto=format',
-];
+const HOME_CATEGORIES = ['Accessories', 'Western Wear', 'Kurtas & Suits', 'Gowns & Dresses'];
+
+const CATEGORY_BANNERS: Record<string, string> = {
+  Accessories: ethnicWearBanner,
+  'Western Wear': westernWearBanner,
+  'Kurtas & Suits': readyToWearBanner,
+  'Gowns & Dresses': accessoriesBanner,
+};
 
 export default function HomePage() {
-  const { navigate } = useApp();
-  const featured = PRODUCTS.slice(0, 4);
+  const { navigate, products } = useApp();
+  const featured = products.slice(0, 4);
 
   return (
     <div className="min-h-screen bg-[#FAFAF9]">
       {/* Hero */}
       <section className="relative h-[85vh] min-h-[520px] overflow-hidden">
-        <div className="absolute inset-0 bg-[#2D6B76]">
+        <div className="absolute inset-0 overflow-hidden bg-[#2D6B76]">
           <img
             src={sukaLogo}
             alt="Suka Fashions"
-            className="absolute inset-y-0 right-0 h-full w-full object-contain object-right opacity-100 sm:w-3/4 lg:w-1/2"
+            className="absolute inset-y-0 right-0 h-full w-[75%] object-contain object-right p-0 opacity-90 [mask-image:linear-gradient(to_right,transparent_0%,rgba(0,0,0,0.15)_12%,rgba(0,0,0,0.55)_22%,black_35%,black_100%)] [-webkit-mask-image:linear-gradient(to_right,transparent_0%,rgba(0,0,0,0.15)_12%,rgba(0,0,0,0.55)_22%,black_35%,black_100%)] sm:w-[70%] sm:p-4 lg:w-[62%] lg:p-6"
           />
         </div>
         <div className="absolute inset-0 bg-gradient-to-r from-[#2D6B76] via-[#2D6B76]/90 to-[#2D6B76]/10" />
-        <div className="relative h-full flex items-center">
+        <div className="relative h-full flex items-start pt-28 sm:pt-32 lg:pt-36">
           <div className="max-w-7xl mx-auto px-6 lg:px-8 w-full">
             <div className="max-w-xl">
               <p className="text-[#7FBCC4] text-xs sm:text-sm uppercase tracking-[0.35em] mb-5 font-medium">
@@ -48,12 +51,6 @@ export default function HomePage() {
                   className="px-8 py-3.5 bg-white text-[#2D6B76] font-medium rounded-full hover:bg-[#F5F1E8] transition-all shadow-lg text-sm"
                 >
                   Explore Collection
-                </button>
-                <button
-                  onClick={() => navigate('login')}
-                  className="px-8 py-3.5 border border-white/40 text-white font-medium rounded-full hover:bg-white/10 transition-all text-sm"
-                >
-                  Sign In
                 </button>
               </div>
             </div>
@@ -77,25 +74,20 @@ export default function HomePage() {
             Categories
           </h2>
         </div>
-        <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-          {CATEGORIES.map((cat, i) => (
+        <div className="grid grid-cols-1 gap-4 sm:gap-6">
+          {HOME_CATEGORIES.map(cat => (
             <button
               key={cat}
-              onClick={() => navigate('products')}
-              className="group relative rounded-2xl overflow-hidden aspect-[3/4] bg-[#F5F1E8]"
+              onClick={() => navigate('products', undefined, cat)}
+              className="group relative block w-full overflow-hidden rounded-2xl bg-[#F5F1E8]"
             >
               <img
-                src={CATEGORY_IMAGES[i]}
+                src={CATEGORY_BANNERS[cat]}
                 alt={cat}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                className="block h-auto w-full transition-transform duration-500 group-hover:scale-[1.01]"
                 loading="lazy"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#2D6B76]/80 via-[#2D6B76]/10 to-transparent" />
-              <div className="absolute bottom-0 inset-x-0 p-3">
-                <p className="text-white text-xs font-medium text-center leading-tight">
-                  {cat}
-                </p>
-              </div>
+              <span className="sr-only">Browse {cat}</span>
             </button>
           ))}
         </div>
