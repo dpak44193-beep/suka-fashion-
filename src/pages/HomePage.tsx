@@ -1,9 +1,7 @@
 import { useApp } from '@/context/AppContext';
 import ProductCard from '@/components/ProductCard';
 import { PRODUCTS, CATEGORIES } from '@/data/mockData';
-
-const HERO_IMAGE =
-  'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1400&h=900&fit=crop&auto=format';
+import sukaLogo from '@/imports/suka_logo.jpeg';
 
 const CATEGORY_IMAGES = [
   'https://images.unsplash.com/photo-1583496661160-fb5218be5698?w=400&h=500&fit=crop&auto=format',
@@ -24,12 +22,12 @@ export default function HomePage() {
       <section className="relative h-[85vh] min-h-[520px] overflow-hidden">
         <div className="absolute inset-0 bg-[#2D6B76]">
           <img
-            src={HERO_IMAGE}
-            alt="Suka Fashions hero collection"
-            className="w-full h-full object-cover opacity-55"
+            src={sukaLogo}
+            alt="Suka Fashions"
+            className="absolute inset-y-0 right-0 h-full w-full object-contain object-right opacity-100 sm:w-3/4 lg:w-1/2"
           />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-r from-[#2D6B76]/85 via-[#4A9BA8]/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#2D6B76] via-[#2D6B76]/90 to-[#2D6B76]/10" />
         <div className="relative h-full flex items-center">
           <div className="max-w-7xl mx-auto px-6 lg:px-8 w-full">
             <div className="max-w-xl">
